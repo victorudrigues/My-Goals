@@ -16,6 +16,9 @@ import { Transactions, TransactionsProps } from "@/components/Transactions"
 // UTILS
 import { mocks } from "@/utils/mocks"
 
+//DATABASE
+import {useGoalRespository} from "@/database/useGoalDatabase"
+
 export default function Home() {
   
   const [transactions, setTransactions] = useState<TransactionsProps>([])
@@ -24,6 +27,9 @@ export default function Home() {
   
   const [name, setName] = useState("")
   const [total, setTotal] = useState("")
+
+  //Function create database
+  const useGoal = useGoalRespository();
 
   
   const bottomSheetRef = useRef<Bottom>(null)
@@ -41,11 +47,13 @@ export default function Home() {
       if (isNaN(totalAsNumber)) {
         return Alert.alert("Erro", "Valor inválido.")
       }
+      
+      useGoal.create({ name, total: totalAsNumber })
 
-      console.log({ name, total: totalAsNumber })
-
+      //close keyboard
       Keyboard.dismiss()
       handleBottomSheetClose()
+
       Alert.alert("Sucesso", "Meta cadastrada!")
 
       setName("")
@@ -58,7 +66,9 @@ export default function Home() {
 
   async function fetchGoals() {
     try {
-      const response = mocks.goals
+      //objects create
+      //function list goals
+      const response = useGoal.all();
       setGoals(response)
     } catch (error) {
       console.log(error)
