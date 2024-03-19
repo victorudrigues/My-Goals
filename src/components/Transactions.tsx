@@ -15,6 +15,7 @@ export function Transactions({ transactions }: Props) {
         Últimas transações
       </Text>
 
+    {/* Estou utilizando a FlatList mas caso não tenha nenhum dado, utilizo o ListEmptyComponent */}
       <FlatList
         data={transactions}
         renderItem={({ item }) => <Transaction transaction={item} />}
