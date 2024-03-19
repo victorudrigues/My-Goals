@@ -1,12 +1,15 @@
 // LIBS
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useTransition } from "react"
 import { Alert, Keyboard, View } from "react-native"
 import { router, useLocalSearchParams } from "expo-router"
 import Bottom from "@gorhom/bottom-sheet"
+
+// DATA CALENDAR
 import dayjs from "dayjs"
 
 //DATABASE
 import { useGoalRespository } from "@/database/useGoalDatabase"
+import { useTransactionRepository } from "@/database/useTransactionDatabase"
 
 // COMPONENTS
 import { Input } from "@/components/Input"
@@ -23,6 +26,7 @@ import { TransactionTypeSelect } from "@/components/TransactionTypeSelect"
 // UTILS
 import { mocks } from "@/utils/mocks"
 import { currencyFormat } from "@/utils/currencyFormat"
+
 
 type Details = {
   name: string
@@ -42,9 +46,9 @@ export default function Details() {
   const routeParams = useLocalSearchParams()
   const goalId = Number(routeParams.id)
 
-  //DATABASE
-
+  //DATABASE HOOKS
   const useGoal = useGoalRespository();
+  const useTransaction = useTransactionRepository();
 
   // BOTTOM SHEET
   const bottomSheetRef = useRef<Bottom>(null)
@@ -56,7 +60,7 @@ export default function Details() {
       if (goalId) {
         //show goal selected
         const goal = useGoal.show(goalId);
-        const transactions = mocks.transactions
+        const transactions = useTransaction.findByGoal(goalId);
 
         if (!goal || !transactions) {
           return router.back()
@@ -92,7 +96,7 @@ export default function Details() {
         amountAsNumber = amountAsNumber * -1
       }
 
-      console.log({ goalId, amount: amountAsNumber })
+      useTransaction.create({ goalId, amount: amountAsNumber })
 
       Alert.alert("Sucesso", "Transação registrada!")
 
@@ -101,6 +105,9 @@ export default function Details() {
 
       setAmount("")
       setType("up")
+
+      //loading list
+      fetchDetails()
     } catch (error) {
       console.log(error)
     }
